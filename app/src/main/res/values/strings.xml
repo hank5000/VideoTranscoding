@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">VideoTranscode</string>
+    <string name="Input">Source :</string>
+    <string name="Output">Destnation :</string>
+    <string name="Load">Load</string>
+    <string name="Info">Information of source video : </string>
+    <string name="bitrate">Bitrate :</string>
+    <string name="Start">Transcode!</string>
+
 </resources>

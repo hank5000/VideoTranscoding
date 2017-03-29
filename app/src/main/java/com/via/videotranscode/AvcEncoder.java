@@ -71,16 +71,18 @@ public class AvcEncoder {
         void getNalu(byte[] nalu);
     }
 
-    private EncodedFrameListener frameListener;
-
+    private EncodedFrameListener mFrameListener;
+    private EncodeParameters mEncodeParameters;
     public AvcEncoder(EncodeParameters encodeParameters, @Nullable EncodedFrameListener listener) throws IOException {
+
+        mEncodeParameters = new EncodeParameters(encodeParameters);
         mediaCodec = MediaCodec.createEncoderByType("video/avc");
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/avc", encodeParameters.getWidth(), encodeParameters.getHeight());
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, encodeParameters.getBitrate());
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/avc", mEncodeParameters.getWidth(), mEncodeParameters.getHeight());
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, mEncodeParameters.getBitrate());
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, encodeParameters.getColor_format());
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, mEncodeParameters.getColor_format());
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 30);
-        frameListener = listener;
+        mFrameListener = listener;
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
     }
@@ -96,13 +98,11 @@ public class AvcEncoder {
             if (inputBufferIndex >= 0) {
                 ByteBuffer inputBuffer = mediaCodec.getInputBuffer(inputBufferIndex);
                 inputBuffer.clear();
-                byte[] bbb = new byte[1280*720*3/2];
+                byte[] bbb = new byte[mEncodeParameters.getWidth()*mEncodeParameters.getHeight()*3/2];
                 b.get(bbb);
                 inputBuffer.put(ByteBuffer.wrap(bbb));
 
-
-
-                mediaCodec.queueInputBuffer(inputBufferIndex, 0, 1280*720*3/2, 0, 0);
+                mediaCodec.queueInputBuffer(inputBufferIndex, 0, mEncodeParameters.getWidth()*mEncodeParameters.getHeight()*3/2, 0, 0);
 
             }
 
@@ -114,8 +114,8 @@ public class AvcEncoder {
                 outputBuffer.get(outData);
 //                Log.d("HANK",outData[0]+","+outData[1]+","+outData[2]+","+outData[3]+","+outData[4]);
                 if (sps != null && pps != null) {
-                    if(null != frameListener) {
-                        frameListener.getNalu(outData);
+                    if(null != mFrameListener) {
+                        mFrameListener.getNalu(outData);
                     }
                 } else {
                     ByteBuffer spsPpsBuffer = ByteBuffer.wrap(outData);
@@ -133,8 +133,8 @@ public class AvcEncoder {
                     System.arraycopy(outData, 0 , sps, 0, sps.length);
                     pps = new byte[outData.length - ppsIndex + 4];
                     System.arraycopy(outData, ppsIndex-4, pps, 0, pps.length);
-                    if (null != frameListener) {
-                        frameListener.getSpsPps(sps, pps);
+                    if (null != mFrameListener) {
+                        mFrameListener.getSpsPps(sps, pps);
                     }
                 }
                 mediaCodec.releaseOutputBuffer(outputBufferIndex, false);

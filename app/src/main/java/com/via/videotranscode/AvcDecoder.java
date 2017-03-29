@@ -22,6 +22,9 @@ public class AvcDecoder extends Thread {
     private MediaExtractor mExtractor;
     private MediaCodec mDecoder;
     private FrameListener frameListener;
+    private int mWidth = 0;
+    private int mHeight = 0;
+    private long mDuration = 0;
 
 
     public interface FrameListener {
@@ -30,6 +33,24 @@ public class AvcDecoder extends Thread {
     }
 
     private boolean eosReceived;
+
+    public int getWidth() {
+        return mWidth;
+    }
+
+    public int getHeight() {
+        return mHeight;
+    }
+
+    public long getCurrentPosition() {
+        if(mExtractor!=null) return mExtractor.getSampleTime();
+        else return 0;
+    }
+
+    public long getDuration() {
+        return mDuration;
+    }
+
 
     public boolean init(String filePath, int color_format, @Nullable FrameListener listener) {
         eosReceived = false;
@@ -49,6 +70,9 @@ public class AvcDecoder extends Thread {
                     try {
                         Log.d(TAG, "format : " + format);
                         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, color_format);
+                        mWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+                        mHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
+                        mDuration = format.getLong(MediaFormat.KEY_DURATION);
 
                         mDecoder.configure(format, null, null, 0 /* Decoder */);
 
@@ -114,10 +138,10 @@ public class AvcDecoder extends Thread {
                     break;
 
                 default:
-                    if (!first) {
-                        startWhen = System.currentTimeMillis();
-                        first = true;
-                    }
+//                    if (!first) {
+//                        startWhen = System.currentTimeMillis();
+//                        first = true;
+//                    }
 //                    try {
 //                        long sleepTime = (info.presentationTimeUs / 1000) - (System.currentTimeMillis() - startWhen);
 //                        Log.d(TAG, "info.presentationTimeUs : " + (info.presentationTimeUs / 1000) + " playTime: " + (System.currentTimeMillis() - startWhen) + " sleepTime : " + sleepTime);
