@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -141,14 +142,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         startBtn = (Button) findViewById(R.id.startBtn);
-//        startBtn.setClickable(false);
         startBtn.setVisibility(View.INVISIBLE);
 
 
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(bitrate_et.getText().toString().equals("")) {
+                    Toast.makeText(MainActivity.this,"Please input bitrate",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
                 try {
+                    startBtn.setVisibility(View.INVISIBLE);
+                    loadBtn.setVisibility(View.INVISIBLE);
+
                     avcDecoder = new AvcDecoder();
 
 
@@ -165,6 +174,14 @@ public class MainActivity extends AppCompatActivity {
                             mediaMuxer = null;
                             videoTrack = -1;
                             avcDecoder = null;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startBtn.setVisibility(View.VISIBLE);
+                                    loadBtn.setVisibility(View.VISIBLE);
+                                }
+                            });
+
                             try {
                                 avcEncoder.close();
                             } catch (IOException e) {
@@ -224,6 +241,15 @@ public class MainActivity extends AppCompatActivity {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startBtn.setVisibility(View.VISIBLE);
+                            loadBtn.setVisibility(View.VISIBLE);
+                        }
+                    });
+
+
                 }
             }
         });
