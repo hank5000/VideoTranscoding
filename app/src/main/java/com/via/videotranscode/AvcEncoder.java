@@ -10,9 +10,61 @@ import android.support.annotation.Nullable;
 public class AvcEncoder {
 
     private MediaCodec mediaCodec;
-
     private byte[] sps;
     private byte[] pps;
+
+    static public class EncodeParameters {
+        int width;
+        int height;
+        int bitrate;
+        int color_format;
+
+        public int getWidth() {
+            return width;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
+        }
+
+        public int getBitrate() {
+            return bitrate;
+        }
+
+        public void setBitrate(int bitrate) {
+            this.bitrate = bitrate;
+        }
+
+        public int getColor_format() {
+            return color_format;
+        }
+
+        public void setColor_format(int color_format) {
+            this.color_format = color_format;
+        }
+
+        public EncodeParameters(int w, int h, int b, int c) {
+            width = w;
+            height = h;
+            bitrate = b;
+            color_format = c;
+        }
+
+        public EncodeParameters(EncodeParameters e) {
+            width = e.getWidth();
+            height = e.getHeight();
+            bitrate = e.getBitrate();
+            color_format = e.getColor_format();
+        }
+    }
 
     public interface EncodedFrameListener {
         void getSpsPps(byte[] sps, byte[] pps);
@@ -21,12 +73,12 @@ public class AvcEncoder {
 
     private EncodedFrameListener frameListener;
 
-    public AvcEncoder(int width, int height, int color_format, @Nullable EncodedFrameListener listener) throws IOException {
+    public AvcEncoder(EncodeParameters encodeParameters, @Nullable EncodedFrameListener listener) throws IOException {
         mediaCodec = MediaCodec.createEncoderByType("video/avc");
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/avc", width, height);
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 8000000);
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/avc", encodeParameters.getWidth(), encodeParameters.getHeight());
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, encodeParameters.getBitrate());
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, color_format);
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, encodeParameters.getColor_format());
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 30);
         frameListener = listener;
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);

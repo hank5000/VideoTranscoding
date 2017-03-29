@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     int color_format = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
     int encode_width = 1280;
     int encode_height = 720;
+    int encode_bitrate = 8000000;
     MediaMuxer mediaMuxer = null;
     int videoTrack = -1;
 
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                     mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
                     mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
                     mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-                    
+
                     encodedFrameListener = new AvcEncoder.EncodedFrameListener() {
                         @Override
                         public void getSpsPps(byte[] sps, byte[] pps) {
@@ -73,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     };
 
-                    avcEncoder = new AvcEncoder(1280,720,color_format,encodedFrameListener);
+                    AvcEncoder.EncodeParameters encodeParameters = new AvcEncoder.EncodeParameters(encode_width,encode_height,encode_bitrate,color_format);
+
+                    avcEncoder = new AvcEncoder(encodeParameters,encodedFrameListener);
                     frameListener = new AvcDecoder.FrameListener() {
                         @Override
                         public void onFrameDecoded(ByteBuffer b, int offset, int size) {
