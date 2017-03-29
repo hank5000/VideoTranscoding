@@ -16,10 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         progressView = (ProgressView) findViewById(R.id.progressView);
 
 
-        source_et.setText("/sdcard/DCIM/Video_1280x720_F57.mp4");
+        source_et.setText("/storage/extsdcard/Video_1280x720_F57.mp4");
 
         loadBtn = (Button) findViewById(R.id.loadBtn);
         loadBtn.setOnClickListener(new View.OnClickListener() {
@@ -152,10 +148,32 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("HANK","Click!!!");
-
                 try {
                     avcDecoder = new AvcDecoder();
+
+
+                    frameListener = new AvcDecoder.FrameListener() {
+                        @Override
+                        public void onFrameDecoded(ByteBuffer b, int offset, int size) {
+
+                            avcEncoder.offerEncoder(b, offset, size);
+                        }
+
+                        public void onEOS() {
+                            mediaMuxer.stop();
+                            mediaMuxer.release();
+                            mediaMuxer = null;
+                            videoTrack = -1;
+                            avcDecoder = null;
+                            try {
+                                avcEncoder.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+
+
                     avcDecoder.init(videoPath, color_format, frameListener);
                     encode_height = avcDecoder.getHeight();
                     encode_width = avcDecoder.getWidth();
@@ -200,38 +218,16 @@ public class MainActivity extends AppCompatActivity {
                     AvcEncoder.EncodeParameters encodeParameters = new AvcEncoder.EncodeParameters(encode_width, encode_height, Integer.valueOf(bitrate_et.getText().toString()), color_format);
 
                     avcEncoder = new AvcEncoder(encodeParameters, encodedFrameListener);
-                    frameListener = new AvcDecoder.FrameListener() {
-                        @Override
-                        public void onFrameDecoded(ByteBuffer b, int offset, int size) {
 
-                            avcEncoder.offerEncoder(b, offset, size);
-                        }
-
-                        public void onEOS() {
-                            mediaMuxer.stop();
-                            mediaMuxer.release();
-                            mediaMuxer = null;
-                            videoTrack = -1;
-                            avcDecoder = null;
-                            try {
-                                avcEncoder.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    };
 
                     avcDecoder.start();
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.d("HANK",e.toString());
                 }
             }
         });
-//
-//        LinearLayout ll = new LinearLayout(this);
-//        ll.setOrientation(LinearLayout.VERTICAL);
+
     }
 
 }
