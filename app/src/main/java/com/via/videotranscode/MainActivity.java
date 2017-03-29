@@ -21,13 +21,14 @@ public class MainActivity extends AppCompatActivity {
 
     AvcDecoder.FrameListener frameListener = null;
     AvcEncoder.EncodedFrameListener encodedFrameListener = null;
-    int color_format = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+    int color_format = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
     int encode_width = 1280;
     int encode_height = 720;
     int encode_bitrate = 8000000;
     MediaMuxer mediaMuxer = null;
     int videoTrack = -1;
 
+    int frameCount = 0;
     long time = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void getNalu(byte[] nalu) {
 //                            Log.d("HANK","Nalu:"+nalu[0]+","+nalu[1]+","+nalu[2]+","+nalu[3]+","+nalu[4]+","+nalu[5]);
+                            Log.d("HANK","FrameCount:"+frameCount);
+                            frameCount++;
                             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
                             info.presentationTimeUs = time*1000;
                             info.size = nalu.length;
