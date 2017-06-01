@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         progressView = (ProgressView) findViewById(R.id.progressView);
 
 
-        source_et.setText("/storage/extsdcard/Video_1280x720_F57.mp4");
+        source_et.setText("/storage/usbsata1/adas.mp4");
 
         loadBtn = (Button) findViewById(R.id.loadBtn);
         loadBtn.setOnClickListener(new View.OnClickListener() {
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     mediaFormat.setString(MediaFormat.KEY_MIME, MediaFormat.MIMETYPE_VIDEO_AVC);
                     mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
                     mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-                    mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 30);
+                    mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
 
                     encodedFrameListener = new AvcEncoder.EncodedFrameListener() {
                         @Override

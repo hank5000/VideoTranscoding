@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 public class AvcEncoder {
 
@@ -107,7 +108,7 @@ public class AvcEncoder {
             }
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
+            int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 1000);
             while (outputBufferIndex >= 0) {
                 ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
                 byte[] outData = new byte[bufferInfo.size];
@@ -119,20 +120,21 @@ public class AvcEncoder {
                     }
                 } else {
                     ByteBuffer spsPpsBuffer = ByteBuffer.wrap(outData);
-                    if (spsPpsBuffer.getInt() == 0x00000001) {
+                    if (outData[0]==0x00 && outData[1]==0x00 && outData[2]==0x00 && outData[3]==0x01) {
                         System.out.println("parsing sps/pps");
                     } else {
                         System.out.println("something is amiss?");
                     }
-                    int ppsIndex = 0;
-                    while(!(spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x01)) {
+                    int ppsIndex = 1;
 
+                    while(!(outData[ppsIndex]==0x00 && outData[ppsIndex+1]==0x00 && outData[ppsIndex+2]==0x00 && outData[ppsIndex+3]==0x01 && outData[ppsIndex+4]==104)) {
+                        ppsIndex++;
                     }
-                    ppsIndex = spsPpsBuffer.position();
-                    sps = new byte[ppsIndex - 4];
+
+                    sps = new byte[ppsIndex];
                     System.arraycopy(outData, 0 , sps, 0, sps.length);
-                    pps = new byte[outData.length - ppsIndex + 4];
-                    System.arraycopy(outData, ppsIndex-4, pps, 0, pps.length);
+                    pps = new byte[outData.length - ppsIndex];
+                    System.arraycopy(outData, ppsIndex, pps, 0, pps.length);
                     if (null != mFrameListener) {
                         mFrameListener.getSpsPps(sps, pps);
                     }
